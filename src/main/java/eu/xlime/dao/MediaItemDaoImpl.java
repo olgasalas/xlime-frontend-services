@@ -64,8 +64,8 @@ public class MediaItemDaoImpl extends AbstractMediaItemDao {
 	}
 
 	@Override
-	public ScoredSet<String> findMediaItemUrlsByText(String text) {
-		return delegate.findMediaItemUrlsByText(text);
+	public ScoredSet<String> findMediaItemUrlsByText(QueryDao query) {
+		return delegate.findMediaItemUrlsByText(query);
 	}
 
 	/* (non-Javadoc)

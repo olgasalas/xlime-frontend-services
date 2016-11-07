@@ -22,6 +22,7 @@ import eu.xlime.bean.NewsArticleBean;
 import eu.xlime.bean.TVProgramBean;
 import eu.xlime.bean.VideoSegment;
 import eu.xlime.dao.MediaItemDao;
+import eu.xlime.dao.QueryDao;
 import eu.xlime.util.CacheFactory;
 import eu.xlime.util.score.ScoredSet;
 import eu.xlime.util.score.ScoredSetImpl;
@@ -67,18 +68,18 @@ public class CachingMediaItemDao extends AbstractMediaItemDao {
 	}
 
 	@Override
-	public ScoredSet<String> findMediaItemUrlsByText(final String text) {
+	public ScoredSet<String> findMediaItemUrlsByText(final QueryDao query) {
 		Callable<? extends ScoredSet<String>> valueLoader = new Callable<ScoredSet<String>>() {
 			@Override
 			public ScoredSet<String> call() throws Exception {
-				return delegate.findMediaItemUrlsByText(text);
+				return delegate.findMediaItemUrlsByText(query);
 			}
 		};
 
 		try {
-			return searchStringCache.get(text, valueLoader);
+			return searchStringCache.get(query.getQuery(), valueLoader);
 		} catch (ExecutionException e) {
-			log.warn("Error loading searchString result for " + text, e);
+			log.warn("Error loading searchString result for " + query.getQuery(), e);
 			return ScoredSetImpl.empty();
 		}
 	}

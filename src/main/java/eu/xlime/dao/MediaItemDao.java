@@ -41,7 +41,7 @@ public interface MediaItemDao {
 	 * @param text
 	 * @return
 	 */
-	ScoredSet<String> findMediaItemUrlsByText(final String text);
+	ScoredSet<String> findMediaItemUrlsByText(final QueryDao query);
 	
 	<T extends MediaItem> List<T> findMediaItems(Class<T> clazz, List<String> urls);
 

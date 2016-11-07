@@ -19,11 +19,13 @@ import eu.xlime.bean.TVProgramBean;
 import eu.xlime.bean.UIDate;
 import eu.xlime.bean.ZattooCustomTVInfo;
 import eu.xlime.dao.MediaItemDao;
+import eu.xlime.dao.QueryDao;
 import eu.xlime.datasum.CachedDatasetSummaryFactory;
 import eu.xlime.datasum.DatasetSummaryFactory;
 import eu.xlime.datasum.bean.DatasetSummary;
 import eu.xlime.util.ListUtil;
 import eu.xlime.util.ResourceTypeResolver;
+import eu.xlime.util.score.ScoredSet;
 
 /**
  * Provides common functionality for implementing {@link MediaItemDao}s such as resolving the type of 

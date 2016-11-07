@@ -28,6 +28,7 @@ import eu.xlime.bean.VideoSegment;
 import eu.xlime.bean.XLiMeResource;
 import eu.xlime.bean.ZattooStreamPosition;
 import eu.xlime.bean.annpos.SpanInTextPosition;
+import eu.xlime.dao.QueryDao;
 import eu.xlime.sparql.SparqlClient;
 import eu.xlime.sparql.SparqlQueryFactory;
 import eu.xlime.summa.bean.UIEntity;
@@ -303,17 +304,17 @@ public abstract class SparqlMediaItemAnnotationDao extends
 	}
 
 	@Override
-	public List<SubtitleSegment> findSubtitleSegmentsByText(String textQuery) {
+	public List<SubtitleSegment> findSubtitleSegmentsByText(QueryDao query) {
 		throw new UnsupportedOperationException("Finding subtitles from text is not supported agains Sparql endpoints since they do not have a standard way to index and retrieve text in an efficient way");
 	}
 
 	@Override
-	public List<OCRAnnotation> findOCRAnnotationsByText(String textQuery) {
+	public List<OCRAnnotation> findOCRAnnotationsByText(QueryDao query) {
 		throw new UnsupportedOperationException("Finding OCR from text is not supported agains Sparql endpoints since they do not have a standard way to index and retrieve text in an efficient way");
 	}
 
 	@Override
-	public List<ASRAnnotation> findASRAnnotationsByText(String text) {
+	public List<ASRAnnotation> findASRAnnotationsByText(QueryDao query) {
 		throw new UnsupportedOperationException("Finding ASR from text is not supported agains Sparql endpoints since they do not have a standard way to index and retrieve text in an efficient way");
 	}
 

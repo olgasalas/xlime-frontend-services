@@ -1,5 +1,8 @@
 package eu.xlime;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +29,8 @@ import eu.xlime.dao.MediaItemAnnotationDao;
 import eu.xlime.dao.MediaItemDao;
 import eu.xlime.dao.MediaItemDaoImpl;
 import eu.xlime.dao.UIEntityDao;
+import eu.xlime.dao.Filter;
+import eu.xlime.dao.QueryDao;
 import eu.xlime.dao.annotation.MediaItemAnnotationDaoImpl;
 import eu.xlime.dao.entity.UIEntityDaoImpl;
 import eu.xlime.datasum.CachedDatasetSummaryFactory;
@@ -236,7 +241,8 @@ public class ServicesResource {
 	@GET
 	@Path("/search")
 	@Produces({ MediaType.APPLICATION_JSON })
-	public Response search(@QueryParam("q") String query) {
+	public Response search(@QueryParam("q") String query, @QueryParam("dateBefore") String dateBefore,
+			@QueryParam("dateAfter") String dateAfter, @QueryParam("language") String language) throws ParseException {
 		log.info("Received /search?q=" + query);
 		List<String> foundMedItemUrls = ImmutableList.of();
 		List<UIEntity> ents = ImmutableList.of();
@@ -245,9 +251,20 @@ public class ServicesResource {
 			foundMedItemUrls = mediaItemDao.findLatestMediaItemUrls(default_recent_minutes, default_recent_limit);
 			annotations = mediaItemAnnotationDao.findRecentAnnotations(default_recent_minutes, default_recent_limit);
 		} else {
-			foundMedItemUrls = findMediaItemUrls(query).asList();
+			Filter filter = new Filter();
+			DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+
+			if (dateBefore != null) filter.setDateBefore(df.parse(dateBefore));
+			if (dateAfter != null) filter.setDateAfter(df.parse(dateAfter));
+			if (language != null) filter.setLanguage(language);
+			
+			QueryDao q = new QueryDao();
+			q.setQuery(query);
+			q.setFilter(filter);
+			
+			foundMedItemUrls = findMediaItemUrls(q).asList();
 			ents = findEntities(query);
-			annotations = findAnnotationsByText(query);
+			annotations = findAnnotationsByText(q);
 		}
 		
 		MediaItemListBean milb = lookupMediaItems(foundMedItemUrls);
@@ -261,7 +278,7 @@ public class ServicesResource {
 		return Response.ok(bean).build();
 	}
 
-	private List<XLiMeResource> findAnnotationsByText(String query) {
+	private List<XLiMeResource> findAnnotationsByText(QueryDao query) {
 		@SuppressWarnings("unchecked")
 		List<XLiMeResource> result = new ListUtil().weave(
 				mediaItemAnnotationDao.findASRAnnotationsByText(query),
@@ -289,10 +306,10 @@ public class ServicesResource {
 		return result;
 	}
 
-	private ScoredSet<String> findMediaItemUrls(String query) {
+	private ScoredSet<String> findMediaItemUrls(QueryDao query) {
 		ScoredSet<String> foundMedItemUrls;
-		if(query.startsWith("http://"))			
-			foundMedItemUrls = mediaItemAnnotationDao.findMediaItemUrlsByKBEntity(query);
+		if(query.getQuery().startsWith("http://"))			
+			foundMedItemUrls = mediaItemAnnotationDao.findMediaItemUrlsByKBEntity(query.getQuery());
 		else
 			foundMedItemUrls = mediaItemDao.findMediaItemUrlsByText(query);
 		return foundMedItemUrls;

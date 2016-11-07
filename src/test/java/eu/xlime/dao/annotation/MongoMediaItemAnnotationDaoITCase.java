@@ -17,6 +17,7 @@ import eu.xlime.bean.EntityAnnotation;
 import eu.xlime.bean.OCRAnnotation;
 import eu.xlime.bean.SubtitleSegment;
 import eu.xlime.bean.TVProgramBean;
+import eu.xlime.dao.QueryDao;
 import eu.xlime.dao.mediaitem.MongoMediaItemDao;
 import eu.xlime.mongo.ConfigOptions;
 import eu.xlime.summa.bean.UIEntity;
@@ -211,7 +212,9 @@ public class MongoMediaItemAnnotationDaoITCase {
 		long start = System.currentTimeMillis();
 
 		String query = "\"Jo Cox\"";
-		List<SubtitleSegment> result = dao.findSubtitleSegmentsByText(query);
+		QueryDao q = new QueryDao();
+		q.setQuery(query);
+		List<SubtitleSegment> result = dao.findSubtitleSegmentsByText(q);
 
 		System.out.println("Retrieved SubtitSegs " + result + " in " + (System.currentTimeMillis() - start) + "ms.");
 		assertNotNull(result);

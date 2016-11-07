@@ -32,6 +32,7 @@ import eu.xlime.bean.TVProgramBean;
 import eu.xlime.bean.UrlLabel;
 import eu.xlime.bean.ZattooCustomTVInfo;
 import eu.xlime.dao.MediaItemDao;
+import eu.xlime.dao.QueryDao;
 import eu.xlime.sparql.QueryExecutionException;
 import eu.xlime.sparql.SparqlClient;
 import eu.xlime.sparql.SparqlQueryFactory;
@@ -121,7 +122,7 @@ public abstract class SparqlMediaItemDao extends AbstractMediaItemDao {
 	}
 
 	@Override
-	public ScoredSet<String> findMediaItemUrlsByText(String text) {
+	public ScoredSet<String> findMediaItemUrlsByText(QueryDao query) {
 		log.warn("Search by text not supported as this is slow in default SPARQL and not standardised (triplestore dependent).");
 		return ScoredSetImpl.empty();
 	}

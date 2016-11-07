@@ -31,6 +31,7 @@ import eu.xlime.bean.XLiMeResource;
 import eu.xlime.dao.MediaItemAnnotationDao;
 import eu.xlime.dao.MediaItemDao;
 import eu.xlime.dao.MediaItemDaoImpl;
+import eu.xlime.dao.QueryDao;
 import eu.xlime.dao.UIEntityDao;
 import eu.xlime.dao.xLiMeResourceDao;
 import eu.xlime.dao.annotation.MediaItemAnnotationDaoImpl;
@@ -186,11 +187,13 @@ public class SpheresFactory {
 			}
 		} else if (res instanceof SearchString) {
 			String keywords = ((SearchString)res).getValue();
+			QueryDao q = new QueryDao();
+			q.setQuery(keywords);
 			String justif = String.format("Matches search '%s'", keywords);
 			List<XLiMeResource> anns = new ArrayList<>();
-			anns.addAll(mediaItemAnnotationDao.findASRAnnotationsByText(keywords));
-			anns.addAll(mediaItemAnnotationDao.findOCRAnnotationsByText(keywords));
-			anns.addAll(mediaItemAnnotationDao.findSubtitleSegmentsByText(keywords));
+			anns.addAll(mediaItemAnnotationDao.findASRAnnotationsByText(q));
+			anns.addAll(mediaItemAnnotationDao.findOCRAnnotationsByText(q));
+			anns.addAll(mediaItemAnnotationDao.findSubtitleSegmentsByText(q));
 			for (XLiMeResource ann: anns) {
 				builder.add(ann, scoref.newScore(1.0, "Matches search"));
 			}
@@ -233,8 +236,10 @@ public class SpheresFactory {
 			// TODO: use Adityia's recommender for the supported media items
 		} else if (res instanceof SearchString) {
 			String keywords = ((SearchString)res).getValue();
+			QueryDao q = new QueryDao();
+			q.setQuery(keywords);
 			String justif = String.format("Matches search '%s'", keywords);
-			ScoredSet<String> miUrls = mediaItemDao.findMediaItemUrlsByText(keywords);
+			ScoredSet<String> miUrls = mediaItemDao.findMediaItemUrlsByText(q);
 			builder.addAll(miUrls);
 		} else if (res instanceof UIEntity) {
 			String entUrl = ((UIEntity) res).getUrl();

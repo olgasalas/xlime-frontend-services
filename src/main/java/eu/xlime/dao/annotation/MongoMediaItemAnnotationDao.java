@@ -23,8 +23,10 @@ import eu.xlime.bean.OCRAnnotation;
 import eu.xlime.bean.SubtitleSegment;
 import eu.xlime.bean.TVProgramBean;
 import eu.xlime.bean.XLiMeResource;
+import eu.xlime.dao.Filter;
 import eu.xlime.dao.MediaItemDao;
 import eu.xlime.dao.MongoXLiMeResourceStorer;
+import eu.xlime.dao.QueryDao;
 import eu.xlime.dao.UIEntityDao;
 import eu.xlime.dao.entity.MongoUIEntityDao;
 import eu.xlime.dao.mediaitem.MongoMediaItemDao;
@@ -258,19 +260,35 @@ public class MongoMediaItemAnnotationDao extends AbstractMediaItemAnnotationDao 
 	}
 
 	@Override
-	public List<ASRAnnotation> findASRAnnotationsByText(String textQuery) {
-		DBObject textQ = new BasicDBObject(
-			    "$text", new BasicDBObject("$search", textQuery)
+	public List<ASRAnnotation> findASRAnnotationsByText(QueryDao query) {
+		Filter f = query.getFilter();
+		BasicDBObject textQ = new BasicDBObject(
+			    "$text", new BasicDBObject("$search", query.getQuery())
 				);
 		DBObject projection = new BasicDBObject(
 				"score", new BasicDBObject("$meta", "textScore")
 				);
 		DBObject sorting = new BasicDBObject(
 				"score", new BasicDBObject("$meta", "textScore")
-				); 
+				);
+		if ((f.getDateBefore() != null && f.getDateAfter() == null)){
+			textQ.append("partOf.startTime.timestamp", new BasicDBObject("$lt",f.getDateBefore()));
+		}
+		if (f.getDateBefore() == null && f.getDateAfter() != null){
+			textQ.append("partOf.startTime.timestamp", new BasicDBObject("$gt",f.getDateAfter()));
+		}
+		if (f.getDateBefore() != null && f.getDateAfter() != null){
+			DBObject where = new BasicDBObject();
+			where.put("$gte",f.getDateBefore());
+			where.put("$lte",f.getDateAfter());
+			textQ.append("partOf.startTime.timestamp", where);
+		}
+		if (f.getLanguage() != null){
+			textQ.append("lang", query.getFilter().getLanguage());
+		}
 		long start = System.currentTimeMillis();
 		DBCursor<ASRAnnotation> tvc = mongoStorer.getDBCollection(ASRAnnotation.class).find(textQ, projection).sort(sorting);
-		log.debug(String.format("Created cursor with %s results for '%s' in %s ms. ", tvc.count(), textQuery, (System.currentTimeMillis() - start)));
+		log.debug(String.format("Created cursor with %s results for '%s' in %s ms. ", tvc.count(), query.getQuery(), (System.currentTimeMillis() - start)));
 		return cleanASRAnnotations(mongoStorer.toScoredSet(tvc, defaultMax, "Found via text search", "score").asList());
 	}
 
@@ -331,19 +349,35 @@ public class MongoMediaItemAnnotationDao extends AbstractMediaItemAnnotationDao 
 	}
 
 	@Override
-	public List<OCRAnnotation> findOCRAnnotationsByText(String textQuery) {
-		DBObject textQ = new BasicDBObject(
-			    "$text", new BasicDBObject("$search", textQuery)
+	public List<OCRAnnotation> findOCRAnnotationsByText(QueryDao query) {
+		Filter f = query.getFilter();
+		BasicDBObject textQ = new BasicDBObject(
+			    "$text", new BasicDBObject("$search", query.getQuery())
 				);
 		DBObject projection = new BasicDBObject(
 				"score", new BasicDBObject("$meta", "textScore")
 				);
 		DBObject sorting = new BasicDBObject(
 				"score", new BasicDBObject("$meta", "textScore")
-				); 
+				);
+		if ((f.getDateBefore() != null && f.getDateAfter() == null)){
+			textQ.append("inSegment.startTime.timestamp", new BasicDBObject("$lt",f.getDateBefore()));
+		}
+		if (f.getDateBefore() == null && f.getDateAfter() != null){
+			textQ.append("inSegment.startTime.timestamp", new BasicDBObject("$gt",f.getDateAfter()));
+		}
+		if (f.getDateBefore() != null && f.getDateAfter() != null){
+			DBObject where = new BasicDBObject();
+			where.put("$gte",f.getDateBefore());
+			where.put("$lte",f.getDateAfter());
+			textQ.append("inSegment.startTime.timestamp", where);
+		}
+		if (f.getLanguage() != null){
+			textQ.append("lang", query.getFilter().getLanguage());
+		}
 		long start = System.currentTimeMillis();
 		DBCursor<OCRAnnotation> tvc = mongoStorer.getDBCollection(OCRAnnotation.class).find(textQ, projection).sort(sorting);
-		log.debug(String.format("Created cursor with %s results for '%s' in %s ms. ", tvc.count(), textQuery, (System.currentTimeMillis() - start)));
+		log.debug(String.format("Created cursor with %s results for '%s' in %s ms. ", tvc.count(), query.getQuery(), (System.currentTimeMillis() - start)));
 		return cleanOCRAnnotations(mongoStorer.toScoredSet(tvc, defaultMax, "Found via text search", "score").asList());
 	}
 
@@ -380,9 +414,10 @@ public class MongoMediaItemAnnotationDao extends AbstractMediaItemAnnotationDao 
 
 
 	@Override
-	public List<SubtitleSegment> findSubtitleSegmentsByText(String textQuery) {
-		DBObject textQ = new BasicDBObject(
-			    "$text", new BasicDBObject("$search", textQuery)
+	public List<SubtitleSegment> findSubtitleSegmentsByText(QueryDao query) {
+		Filter f = query.getFilter();
+		BasicDBObject textQ = new BasicDBObject(
+			    "$text", new BasicDBObject("$search", query.getQuery())
 				);
 		DBObject projection = new BasicDBObject(
 				"score", new BasicDBObject("$meta", "textScore")
@@ -390,9 +425,24 @@ public class MongoMediaItemAnnotationDao extends AbstractMediaItemAnnotationDao 
 		DBObject sorting = new BasicDBObject(
 				"score", new BasicDBObject("$meta", "textScore")
 				); 
+		if ((f.getDateBefore() != null && f.getDateAfter() == null)){
+			textQ.append("partOf.startTime.timestamp", new BasicDBObject("$lt",f.getDateBefore()));
+		}
+		if (f.getDateBefore() == null && f.getDateAfter() != null){
+			textQ.append("partOf.startTime.timestamp", new BasicDBObject("$gt",f.getDateAfter()));
+		}
+		if (f.getDateBefore() != null && f.getDateAfter() != null){
+			DBObject where = new BasicDBObject();
+			where.put("$gte",f.getDateBefore());
+			where.put("$lte",f.getDateAfter());
+			textQ.append("partOf.startTime.timestamp", where);
+		}
+		if (f.getLanguage() != null){
+			textQ.append("lang", query.getFilter().getLanguage());
+		}
 		long start = System.currentTimeMillis();
 		DBCursor<SubtitleSegment> tvc = mongoStorer.getDBCollection(SubtitleSegment.class).find(textQ, projection).sort(sorting);
-		log.debug(String.format("Created cursor with %s results for '%s' in %s ms. ", tvc.count(), textQuery, (System.currentTimeMillis() - start)));
+		log.debug(String.format("Created cursor with %s results for '%s' in %s ms. ", tvc.count(), query.getQuery(), (System.currentTimeMillis() - start)));
 		return cleanSubTitleSegments(mongoStorer.toScoredSet(tvc, defaultMax, "Found via text search", "score").asList());
 	}
 

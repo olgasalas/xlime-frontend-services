@@ -17,6 +17,7 @@ import eu.xlime.bean.SubtitleSegment;
 import eu.xlime.bean.TVProgramBean;
 import eu.xlime.bean.XLiMeResource;
 import eu.xlime.dao.MediaItemAnnotationDao;
+import eu.xlime.dao.QueryDao;
 import eu.xlime.summa.bean.UIEntity;
 import eu.xlime.util.CacheFactory;
 import eu.xlime.util.score.ScoredSet;
@@ -122,8 +123,8 @@ public class CachedMediaItemAnnotationDao extends AbstractMediaItemAnnotationDao
 	}
 
 	@Override
-	public List<ASRAnnotation> findASRAnnotationsByText(String text) {
-		return delegate.findASRAnnotationsByText(text);
+	public List<ASRAnnotation> findASRAnnotationsByText(QueryDao query) {
+		return delegate.findASRAnnotationsByText(query);
 	}
 
 	@Override
@@ -147,8 +148,8 @@ public class CachedMediaItemAnnotationDao extends AbstractMediaItemAnnotationDao
 	}
 
 	@Override
-	public List<OCRAnnotation> findOCRAnnotationsByText(String textQuery) {
-		return delegate.findOCRAnnotationsByText(textQuery);
+	public List<OCRAnnotation> findOCRAnnotationsByText(QueryDao query) {
+		return delegate.findOCRAnnotationsByText(query);
 	}
 	
 	@Override
@@ -163,8 +164,8 @@ public class CachedMediaItemAnnotationDao extends AbstractMediaItemAnnotationDao
 	}
 
 	@Override
-	public List<SubtitleSegment> findSubtitleSegmentsByText(String textQuery) {
-		return delegate.findSubtitleSegmentsByText(textQuery);
+	public List<SubtitleSegment> findSubtitleSegmentsByText(QueryDao query) {
+		return delegate.findSubtitleSegmentsByText(query);
 	}
 
 	@Override

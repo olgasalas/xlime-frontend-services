@@ -78,7 +78,7 @@ public interface MediaItemAnnotationDao {
 	
 	List<ASRAnnotation> findAllASRAnnotations(int limit);
 	
-	List<ASRAnnotation> findASRAnnotationsByText(String text);
+	List<ASRAnnotation> findASRAnnotationsByText(QueryDao query);
 	
 	List<ASRAnnotation> findASRAnnotationsForTVProg(String tvProgUri);
 
@@ -100,7 +100,7 @@ public interface MediaItemAnnotationDao {
 	 * @param textQuery
 	 * @return
 	 */
-	List<SubtitleSegment> findSubtitleSegmentsByText(String textQuery);	
+	List<SubtitleSegment> findSubtitleSegmentsByText(QueryDao query);	
 	
 	/**
 	 * Finds a number of available {@link SubtitleSegment}s.
@@ -132,7 +132,7 @@ public interface MediaItemAnnotationDao {
 	 * @param textQuery
 	 * @return
 	 */
-	List<OCRAnnotation> findOCRAnnotationsByText(String textQuery);
+	List<OCRAnnotation> findOCRAnnotationsByText(QueryDao query);
 	
 	/**
 	 * Finds recent annotations

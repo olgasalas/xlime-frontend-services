@@ -4,8 +4,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -20,6 +22,8 @@ import eu.xlime.bean.MediaItem;
 import eu.xlime.bean.MicroPostBean;
 import eu.xlime.bean.NewsArticleBean;
 import eu.xlime.bean.TVProgramBean;
+import eu.xlime.dao.Filter;
+import eu.xlime.dao.QueryDao;
 import eu.xlime.mongo.ConfigOptions;
 import eu.xlime.util.score.ScoredSet;
 
@@ -148,23 +152,35 @@ public class MongoMediaItemDaoITCase {
 	}
 	
 	@Test
-	public void test_findMediaItemUrlsByText() {
-//		String query = "Brexit";
-//		testMediaitemUrlsByText("Brexit");
-//		testMediaitemUrlsByText("Farage Cameron");
-//		testMediaitemUrlsByText("\"David Cameron\"");
+	public void test_findMediaItemUrlsByText() throws ParseException {
+		QueryDao q = new QueryDao();
+		Filter f = new Filter();
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+		//Date d = df.parse("2016-08-08T06:33:24Z");
+		//Date d = df.parse("2016-09-21T04:33:24Z");
+		Date db = df.parse("2016-09-27T07:10:00Z");
+		Date da = df.parse("2016-10-07T01:00:00Z");
+		f.setDateBefore(db);
+		f.setDateAfter(da);
+		//f.setLanguage("en");
+		q.setFilter(f);
+		q.setQuery("merkel");
+		testMediaitemUrlsByText(q);
 	}
 
-	private void testMediaitemUrlsByText(String query) {
+	private void testMediaitemUrlsByText(QueryDao query) {
 		Properties props = new Properties();
 		props.put(ConfigOptions.XLIME_MONGO_RESOURCE_DATABASE_NAME.getKey(), "xlimeres");
 		MongoMediaItemDao dao = new MongoMediaItemDao(props);
-		
 		long start = System.currentTimeMillis();
 		ScoredSet<String> result = dao.findMediaItemUrlsByText(query);
 		System.out.println(String.format("Retrieved %s mediaItemsUrls in %s ms.", result.size(), (System.currentTimeMillis() - start)));
 		System.out.println("All : " + result);
-		assertEquals(30, result.size());
+		for(int i = 0; i<result.size();i++){
+			System.out.println(result.asList().get(i));
+		}
+		System.out.println(result.size());
+		//assertEquals(30, result.size());
 	}
 		
 }

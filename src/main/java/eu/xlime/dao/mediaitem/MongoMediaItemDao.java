@@ -27,8 +27,10 @@ import eu.xlime.bean.TVProgramBean;
 import eu.xlime.bean.UIDate;
 import eu.xlime.bean.VideoSegment;
 import eu.xlime.bean.XLiMeResource;
+import eu.xlime.dao.Filter;
 import eu.xlime.dao.MediaItemDao;
 import eu.xlime.dao.MongoXLiMeResourceStorer;
+import eu.xlime.dao.QueryDao;
 import eu.xlime.dao.XLiMeResourceStorer;
 import eu.xlime.datasum.bean.DatasetSummary;
 import eu.xlime.mongo.DBCollectionProvider;
@@ -113,20 +115,50 @@ public class MongoMediaItemDao extends AbstractMediaItemDao implements XLiMeReso
 	}
 
 	@Override
-	public ScoredSet<String> findMediaItemUrlsByText(String text) {
-		DBObject textQ = new BasicDBObject(
-			    "$text", new BasicDBObject("$search", text)
+	public ScoredSet<String> findMediaItemUrlsByText(QueryDao query) {
+		Filter f = query.getFilter();
+		BasicDBObject textTV = new BasicDBObject(
+			    "$text", new BasicDBObject("$search", query.getQuery())
 				);
-		DBObject projection = new BasicDBObject(
+		BasicDBObject textNM = new BasicDBObject(
+			    "$text", new BasicDBObject("$search", query.getQuery())
+				);
+		BasicDBObject projection = new BasicDBObject(
 				"score", new BasicDBObject("$meta", "textScore")
 				);
-		DBObject sorting = new BasicDBObject(
+		BasicDBObject sorting = new BasicDBObject(
 				"score", new BasicDBObject("$meta", "textScore")
-				); 
+				);
+		if ((f.getDateBefore() != null) && (f.getDateAfter() == null)){
+			//For TVProgramBean
+			textTV.append("broadcastDate.timestamp", new BasicDBObject("$lt",f.getDateBefore()));
+			//For the rest of the collections
+			textNM.append("created.timestamp", new BasicDBObject("$lt",f.getDateBefore()));
+		}
+		if ((f.getDateBefore() == null) && (f.getDateAfter() != null)){
+			//For TVProgramBean
+			textTV.append("broadcastDate.timestamp", new BasicDBObject("$gt",f.getDateAfter()));
+			//For the rest of the collections
+			textNM.append("created.timestamp", new BasicDBObject("$gt",f.getDateAfter()));
+		}
+		if ((f.getDateBefore() != null) && (f.getDateAfter() != null)){
+			DBObject where = new BasicDBObject();
+			where.put("$gte",f.getDateBefore());
+			where.put("$lte",f.getDateAfter());
+			//For TVProgramBean
+			textTV.append("broadcastDate.timestamp", where);
+			//For the rest of the collections
+			textNM.append("created.timestamp", where);
+		}
+		if (f.getLanguage() != null){
+			textNM.append("lang", query.getFilter().getLanguage());
+			//nec.in("lang", f.getLanguage());
+			//mpc.in("lang", f.getLanguage());
+		}
 		long start = System.currentTimeMillis();
-		DBCursor<TVProgramBean> tvc = mongoStorer.getDBCollection(TVProgramBean.class).find(textQ, projection).sort(sorting).sort(DBSort.desc("broadcastDate.timestamp"));
-		DBCursor<NewsArticleBean> nec = mongoStorer.getDBCollection(NewsArticleBean.class).find(textQ, projection).sort(sorting).sort(DBSort.desc("created.timestamp"));
-		DBCursor<MicroPostBean> mpc = mongoStorer.getDBCollection(MicroPostBean.class).find(textQ, projection).sort(sorting).sort(DBSort.desc("created.timestamp"));
+		DBCursor<TVProgramBean> tvc = mongoStorer.getDBCollection(TVProgramBean.class).find(textTV, projection).sort(sorting).sort(DBSort.desc("broadcastDate.timestamp"));
+		DBCursor<NewsArticleBean> nec = mongoStorer.getDBCollection(NewsArticleBean.class).find(textNM, projection).sort(sorting).sort(DBSort.desc("created.timestamp"));
+		DBCursor<MicroPostBean> mpc = mongoStorer.getDBCollection(MicroPostBean.class).find(textNM, projection).sort(sorting).sort(DBSort.desc("created.timestamp"));
 		log.debug(String.format("Created cursors (tv=%s, news=%s, socmed=%s) results in %s ms.", tvc.count(), nec.count(), mpc.count(), (System.currentTimeMillis() - start)));
 		return ScoredSetImpl.<String>builder()
 			.addAll(toMediaItemUrlScoredSet(tvc, 10))
